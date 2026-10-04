@@ -1,181 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enter</title>
- 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        sans-serif;
-
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      height: 100vh;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
-      padding: 0 20px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 16px;
-
-      font-size: 16px;
-
-      border: none;
-      border-bottom: 1px solid #333;
-
-      outline: none;
-
-      text-align: center;
-
-      background: transparent;
-      color: #fff;
-
-      transition: border-color 0.2s ease;
-    }
-    // what are you looking for...
-    input:focus {
-      border-bottom-color: #fff;
-    }
-
-    .result {
-      margin-top: 24px;
-
-      font-size: 15px;
-      line-height: 1.5;
-
-      color: #888;
-
-      min-height: 22px;
-    }
-
-    video {
-      width: 100%;
-      max-width: 320px;
-
-      border-radius: 8px;
-
-      margin-bottom: 16px;
-
-      outline: none;
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>·</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:"Courier New",monospace}
+canvas{display:block;image-rendering:pixelated}
+.ui{margin-top:20px;text-align:center;width:320px}
+input{width:100%;padding:10px 0;background:transparent;border:none;border-bottom:1px solid #1c1c1c;color:#fff;font-family:inherit;font-size:14px;letter-spacing:.15em;text-align:center;outline:none;transition:border-color .2s}
+input:focus{border-bottom-color:#333}
+input::placeholder{color:#1e1e1e}
+#m{margin-top:14px;font-size:10px;letter-spacing:.2em;color:transparent;min-height:14px}
+#m.e{color:#4a1010}
+</style>
 </head>
-
 <body>
+<canvas id="c" width="320" height="340"></canvas>
+<div class="ui">
+  <input type="text" id="a" placeholder="·" autocomplete="off" spellcheck="false"/>
+  <div id="m"></div>
+</div>
+<script>
 
-  <div class="container" id="puzzleBox">
 
-    <input
-      type="password"
-      id="pass"
-      placeholder="Type PIN..."
-      autocomplete="off"
-      inputmode="numeric"
-    />
+(function(){
+  const _p=[0xce,0xc2,0x66,0x5b,0x75,0x7f,0x44,0x2c];
+  const _q=[0x80,0xc4,0x2d,0xfa,0x66,0xd7,0x6e,0xbf];
+  const _r=[0x6b,0x29,0x77,0x8b,0x2e,0x81,0x18,0xb7];
 
-    <div id="result" class="result"></div>
+  const _fp=new Set();
+  for(let a=1,b=1;a<=36;){_fp.add(a-1);[a,b]=[b,a+b];}
+  const _fpa=[..._fp].sort((x,y)=>x-y);
 
-  </div>
 
-  <script>
-    const input = document.getElementById("pass");
-    const result = document.getElementById("result");
-    const puzzleBox = document.getElementById("puzzleBox");
+  let _s=0xF3A2C841;
+  const _lcg=()=>{_s=(Math.imul(_s,1664525)+1013904223)>>>0;return(_s>>>24)&0xFF;};
 
-    const archive = [
-      "x",
-      "9",
-      "x",
-      "x",
-      "9",
-      "x",
-      "8",
-      "x",
-      "x",
-      "x",
-      "x",
-      "2"
-    ];
-
-    const sequence = [1, 4, 6, 11];
-
-    function reveal() {
-      return sequence
-        .map(index => archive[index])
-        .join("");
+  const grid=[];
+  let fi=0;
+  for(let i=0;i<36;i++){
+    if(_fp.has(i)){
+      grid.push(_p[fi]^_q[fi]^_r[fi]);fi++;
+    }else{
+      grid.push(_lcg());
     }
+  }
 
-    function success() {
-      puzzleBox.innerHTML = `
-        <video
-          src="fun.mp4"
-          autoplay
-          mute
-          loop
-          playsinline
-          style="
-            width: 100%;
-            max-width: 320px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            pointer-events: none;
-          "
-        ></video>
+  const cv=document.getElementById('c');
+  const cx=cv.getContext('2d');
+  const SZ=53;
 
-        <div style="
-          font-size: 15px;
-          letter-spacing: 0.5px;
-          color: #fff;
-        ">
-          wait till the end of the day
-        </div>
-      `;
+  for(let r=0;r<6;r++){
+    for(let c=0;c<6;c++){
+      const i=r*6+c;
+      const v=grid[i];
+      const marked=_fp.has(i);
+
+      cx.fillStyle=marked?'#0f0f0f':'#080808';
+      cx.fillRect(c*SZ,r*SZ,SZ,SZ);
+
+      cx.strokeStyle='#131313';
+      cx.lineWidth=1;
+      cx.strokeRect(c*SZ+.5,r*SZ+.5,SZ-1,SZ-1);
+
+      cx.fillStyle=marked?'#2c2c2c':'#191919';
+      cx.font='12px Courier New';
+      cx.textAlign='center';
+      cx.textBaseline='middle';
+      cx.fillText(v.toString(16).padStart(2,'0'),c*SZ+SZ/2,r*SZ+SZ/2);
+
+      // stop looking in here 
     }
+  }
 
-    function incorrect() {
-      result.textContent = "Incorrect";
+  cx.fillStyle='#000';
+  cx.fillRect(0,SZ*6,320,22);
+  cx.fillStyle='#1d1d1d';
+  cx.font='9px Courier New';
+  cx.textAlign='center';
+  // ANSWER IS TOMETOLE SHA IS ENCRYPTED BAD
+  cx.textBaseline='middle';
+  cx.fillText('1  ·  1  ·  2  ·  3  ·  5  ·  8  ···',160,SZ*6+11);
 
-      setTimeout(() => {
-        result.textContent = "";
-      }, 1500);
+  const _H='b09e2912818f48fa5e4c91e2bb7bd0eaa7a7f200721296f9bece8c89a1f026be';
+
+  async function _chk(s){
+    const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s.trim().toLowerCase()));
+    return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')===_H;
+  }
+
+  const inp=document.getElementById('a');
+  const msg=document.getElementById('m');
+  let _ok=false;
+
+  inp.addEventListener('keypress',async e=>{
+    if(e.key!=='Enter'||_ok)return;
+    if(await _chk(inp.value)){
+      _ok=true;
+      document.body.innerHTML='<div style="color:#fff;font-family:Courier New,monospace;font-size:12px;letter-spacing:.12em">wait till the end of the day</div>';
+    }else{
+      inp.value='';
+      msg.textContent='—';
+      msg.className='e';
+      setTimeout(()=>{msg.textContent='';msg.className='';},1300);
     }
-
-    input.addEventListener("keypress", function (event) {
-      if (event.key !== "Enter") {
-        return;
-      }
-
-      const value = input.value.trim();
-
-      if (value === reveal()) {
-        success();
-      } else {
-        incorrect();
-      }
-    });
-  </script>
-
+  });
+})();
+</script>
 </body>
 </html>
